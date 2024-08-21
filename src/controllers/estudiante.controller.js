@@ -5,7 +5,7 @@ import Tratamiento from '../models/tratamiento.js';
 import Veterinario from '../models/veterinario.js';
 import { Types } from 'mongoose';
 
-const registrarPaciente = async (req, res) => {
+const registrarEstudiante = async (req, res) => {
     const { email } = req.body;
 
     if (Object.values(req.body).includes('')) return res.status(400).json({ res: 'Rellene todos los campos antes de enviar la solicitud' })
@@ -16,11 +16,9 @@ const registrarPaciente = async (req, res) => {
 
     const nuevoPaciente = new Paciente(req.body)
 
-    const password = `vet${Math.random().toString(36).slice(2)}`
-    nuevoPaciente.password = await nuevoPaciente.encryptPassword(password)
     nuevoPaciente.veterinario = req.veterinarioBDD._id
 
-    await sendMailToPaciente(nuevoPaciente.email, password)
+    await sendMailToPaciente(nuevoPaciente.email)
     await nuevoPaciente.save()
 
     res.status(201).json({ res: 'Paciente registrado correctamente' })
@@ -109,7 +107,7 @@ export {
     perfilPaciente,
     listarPacientes,
     detallePaciente,
-    registrarPaciente,
+    registrarEstudiante as registrarPaciente,
     actualizarPaciente,
     eliminarPaciente,
 };
