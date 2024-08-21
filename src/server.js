@@ -1,25 +1,29 @@
-//Requerir los modulos necesarios
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
+import routerVeterinario from "./routes/veterinario.routes.js";
+import routerPaciente from "./routes/paciente.routes.js";
+import routerTratamiento from "./routes/tratamiento.routes.js";
+import "dotenv/config";
+import morgan from "morgan";
+import { createServer } from "http";
 
-//Inicializaciones
 const app = express();
-dotenv.config();
+app.use(morgan("dev"));
 
-//Configuraciones
-app.set('port', process.env.PORT || 4000);
-app.use(cors());
-
-//Middlewares
+app.use(
+	cors({
+		origin: "*",
+	})
+);
 app.use(express.json());
 
-//Variables globales
+app.get("/", (_, res) => res.send("Server on"));
 
-//Rutas
-app.get('/', (req, res) => {
-    res.send('Server on');
-});
+app.use("/api", routerVeterinario);
+app.use("/api", routerPaciente);
+app.use("/api", routerTratamiento);
+app.use((_, res) => res.status(404).json({ res: "404 - Endpoint not found" }));
 
-//Exportar la instancia  de express por medio de app
-export default app;
+const server = createServer(app);
+
+export default server;
