@@ -1,113 +1,75 @@
-import { sendMailToPaciente } from '../config/nodemailer.js';
-import generarToken from '../helpers/crearJWT.js';
-import Paciente from '../models/paciente.js';
-import Tratamiento from '../models/tratamiento.js';
-import Veterinario from '../models/veterinario.js';
-import { Types } from 'mongoose';
+import EstudianteSchema from '../models/estudiantes.js';
+import MatriculaSchema from '../models/matriculas.js';
+import UsuarioSchema from '../models/usuarios.js';
 
 const registrarEstudiante = async (req, res) => {
+
     const { email } = req.body;
 
     if (Object.values(req.body).includes('')) return res.status(400).json({ res: 'Rellene todos los campos antes de enviar la solicitud' })
 
-    const verificarEmailBDD = await Paciente.findOne({ email }) || await Veterinario.findOne({ email })
+    const verificarEmailBDD = await EstudianteSchema.findOne({ email }) || await UsuarioSchema.findOne({ email })
 
     if (verificarEmailBDD) return res.status(400).json({ res: 'El email ya se encuentra registrado' })
 
-    const nuevoPaciente = new Paciente(req.body)
+    const nuevoEstudiante = new EstudianteSchema(req.body)
 
-    nuevoPaciente.veterinario = req.veterinarioBDD._id
+    nuevoEstudiante.usuario = req.usuarioBDD._id
 
-    await sendMailToPaciente(nuevoPaciente.email)
-    await nuevoPaciente.save()
+    await nuevoEstudiante.save()
 
-    res.status(201).json({ res: 'Paciente registrado correctamente' })
+    res.status(201).json({ res: 'Estudiante registrado correctamente' })
 };
 
-const loginPaciente = async (req, res) => {
-    const { email, password } = req.body;
 
-    if (Object.values(req.body).includes('')) return res.status(400).json({ res: 'Rellene todos los campos antes de enviar la solicitud' })
+const listarEstudiantes = async (req, res) => {
+    res.status(200).json(await EstudianteSchema.find().select('-createdAt -updatedAt -__v'))
+};
+
+const detalleEstudiante = async (req, res) => {
     
-    const pacienteBDD = await Paciente.findOne({ email })
-
-    if (!pacienteBDD) return res.status(404).json({ res: 'Email no registrado' })
-
-    const verificarPassword = await pacienteBDD.matchPassword(password)
-
-    if (!verificarPassword) return res.status(401).json({ res: 'Contraseña incorrecta' })
-
-    const token = generarToken(pacienteBDD._id, 'paciente')
-
-    const { nombre, propietario, celular, convencional, _id } = pacienteBDD
-
-    res.status(200).json({ token, _id, nombre, propietario, email, celular, convencional, rol: 'paciente' })
-};
-
-const perfilPaciente = (req, res) => {
-
-    delete req.pacienteBDD.password
-    delete req.pacienteBDD.createdAt
-    delete req.pacienteBDD.updatedAt
-    delete req.pacienteBDD.__v
-
-    req.pacienteBDD.rol = 'paciente'
-
-    res.status(200).json(req.pacienteBDD)
-};
-
-const listarPacientes = async (req, res) => {
-
-    if (req.pacienteBDD && "propietario" in req.pacienteBDD) {
-        res.status(200).json(await Paciente.find(req.pacienteBDD._id).select("-salida -createdAt -updatedAt -__v").populate('veterinario','_id nombre apellido'))
-    } else {
-        res.status(200).json(await Paciente.find({estado:true}).where('veterinario').equals(req.veterinarioBDD).select("-salida -createdAt -updatedAt -__v").populate('veterinario','_id nombre apellido'))
-    }
-
-};
-
-const detallePaciente = async (req, res) => {
+    const { cedula } = req.params
     
-    const { id } = req.params
-    
-    const paciente = await Paciente.findById(id).select('-createdAt -updatedAt -__v -password -tratamientos').populate('veterinario', 'nombre apellido')
+    const estudiante = await EstudianteSchema.findOne({cedula}).select('-createdAt -updatedAt -__v')
 
-    const tratamientos = await Tratamiento.find({ estado: true }).where('paciente').equals(id)
+    if (!estudiante) return res.status(404).json({ res: 'Estudiante no encontrado' })
 
-    if (!paciente) return res.status(404).json({ res: 'Paciente no encontrado' })
+    const materias = await MatriculaSchema.find({estudiante: estudiante._id}).select('materia').populate('materia', 'nombre').select('-createdAt -updatedAt -__v')
 
-    res.status(200).json({ paciente, tratamientos })
+    res.status(200).json({ estudiante, materias }) 
 
 };
 
-const actualizarPaciente = async (req, res) => {
-    const { id } = req.params
+const actualizarEstudiante = async (req, res) => {
+    const { cedula } = req.params
 
-    if (!Types.ObjectId.isValid(id)) return res.status(400).json({ res: `ID ${id} no válido` })
+    const estudiante = await EstudianteSchema.findOne({ cedula })
+
+    if (!estudiante) return res.status(400).json({ res: `ID ${id} no válido` })
 
     if (Object.values(req.body).includes('')) return res.status(400).json({ res: 'Rellene todos los campos antes de enviar la solicitud' })
 
-    await Paciente.findByIdAndUpdate(id, req.body)
+    await EstudianteSchema.findByIdAndUpdate(estudiante._id, req.body)
 
-    res.status(200).json({ res: 'Paciente actualizado correctamente' })
+    res.status(200).json({ res: 'Estudiante actualizado correctamente' })
 };
 
-const eliminarPaciente = async (req, res) => {
-    const { id } = req.params
+const eliminarEstudiante = async (req, res) => {
+    const { cedula } = req.params
 
-    if( !Types.ObjectId.isValid(id) ) return res.status(404).json({ res: `ID ${id} no válido`})
+    const estudiante = await EstudianteSchema.findOne({ cedula})
 
-    await Paciente.findByIdAndUpdate(id, { salida: Date.now(), estado: false })
+    if( !estudiante) return res.status(404).json({ res: `ID ${id} no válido`})
 
-    res.status(200).json({ res: 'Paciente eliminado correctamente' })
+    await EstudianteSchema.findByIdAndDelete(estudiante._id)
+
+    res.status(200).json({ res: 'Estudiante eliminado correctamente' })
 };
 
 export {
-    loginPaciente,
-    perfilPaciente,
-    listarPacientes,
-    detallePaciente,
-    registrarEstudiante as registrarPaciente,
-    actualizarPaciente,
-    eliminarPaciente,
+    listarEstudiantes,
+    detalleEstudiante,
+    registrarEstudiante,
+    actualizarEstudiante,
+    eliminarEstudiante,
 };

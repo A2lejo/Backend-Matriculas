@@ -34,4 +34,6 @@ usarioSchema.methods.matchPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 
+
+
 export default model("Usuario", usarioSchema);

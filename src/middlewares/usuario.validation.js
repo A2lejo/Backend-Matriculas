@@ -1,11 +1,11 @@
 import { check, validationResult } from "express-validator";
 
-export const validacionVeterinario = [
-    check(["nombre", "apellido", "direccion", "telefono", "email", "password"])
+export const validacionUsuario = [
+    check(["nombre", "apellido", "email", "password"])
         .exists()
-        .withMessage('Los campos "nombre" "apellido" "dirección" "teléfono" "email" y/o "password" son obligatorios')
+        .withMessage('Los campos "nombre" "apellido"  "email" y/o "password" son obligatorios')
         .notEmpty()
-        .withMessage('Los campos "nombre" "apellido" "dirección" "teléfono" "email" y/o "password" no pueden estar vacíos')
+        .withMessage('Los campos "nombre" "apellido" "email" y/o "password" no pueden estar vacíos')
         .customSanitizer(value => value?.trim()),
 
     check(["nombre", "apellido"])
@@ -13,18 +13,6 @@ export const validacionVeterinario = [
         .withMessage('El campo "nombre" y/o "apellido" debe(n) tener entre 3 y 12 caracteres')
         .isAlpha("es-ES", { ignore: "áéíóúÁÉÍÓÚñÑ" })
         .withMessage('El campo "nombre" y/o "apellido" debe(n) contener solo letras')
-        .customSanitizer(value => value?.trim()),
-
-    check("direccion")
-        .isLength({ min: 3, max: 20 })
-        .withMessage('El campo "dirección" debe tener entre 3 y 20 caracteres')
-        .customSanitizer(value => value?.trim()),
-
-    check("telefono")
-        .isLength({ min: 9 })
-        .withMessage('El campo "teléfono" debe tener al menos 10 digitos')
-        .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
         .customSanitizer(value => value?.trim()),
 
     check("email")
