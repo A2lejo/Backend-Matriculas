@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { Types } from "mongoose";
 
 const estudianteSchema = new Schema({
     nombre: {
@@ -43,6 +44,10 @@ const estudianteSchema = new Schema({
         trim: true,
         unique: true,
     },
+    materias:[{
+        type: Types.ObjectId,
+        ref: "Materia",
+    }]
 },
 {
     timestamps: true,
