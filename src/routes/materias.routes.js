@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
     detalleMateria,
+    ListarMaterias,
     registrarMateria,
     actualizarMateria,
     eliminarMateria,
@@ -10,7 +11,9 @@ import verificarAutenticacion from "../middlewares/auth.js";
 
 const router = Router();
 
-router.post('/materia/registro',verificarAutenticacion, registrarMateria)
+router.post('/materia/registro',verificarAutenticacion, registrarMateria);
+router.get("/materias", verificarAutenticacion, ListarMaterias);
+
 
 router
     .route('/materia/:codigo')

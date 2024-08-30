@@ -34,7 +34,10 @@ const detalleEstudiante = async (req, res) => {
 
     if (!estudiante) return res.status(404).json({ res: 'Estudiante no encontrado' })
 
-    const materias = await MatriculaSchema.find({estudiante: estudiante._id}).select('materia').populate('materia', 'nombre').select('-createdAt -updatedAt -__v')
+    const materias = await MatriculaSchema.find({estudiante: estudiante._id}).select('materia').populate('materia').select('-createdAt -updatedAt -__v')
+    for (let i = 0; i < materias.length; i++) {
+        materias[i] = materias[i].materia
+    }
 
     res.status(200).json({ estudiante, materias }) 
 
@@ -57,9 +60,9 @@ const actualizarEstudiante = async (req, res) => {
 const eliminarEstudiante = async (req, res) => {
     const { cedula } = req.params
 
-    const estudiante = await EstudianteSchema.findOne({ cedula})
+    const estudiante = await EstudianteSchema.findOne({ cedula })
 
-    if( !estudiante) return res.status(404).json({ res: `ID ${id} no válido`})
+    if( !estudiante) return res.status(404).json({ res: `Cédula ${cedula} no válido`})
 
     await EstudianteSchema.findByIdAndDelete(estudiante._id)
 

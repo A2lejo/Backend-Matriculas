@@ -32,7 +32,9 @@ const detalleMatricula = async (req, res) => {
     if (!Types.ObjectId.isValid(id))
         return res.status(404).json({ res: `No existe la matricula con el id ${id}` });
 
-    res.status(200).json(await MatriculaSchema.findById(id).populate('estudiante', 'nombre apellido email').populate('materia', 'nombre codigo descripcion creditos').select('-createdAt -updatedAt -__v'));
+    const matriculas = await MatriculaSchema.findById(id).populate('estudiante', 'nombre apellido cedula ciudad email').populate('materia', 'nombre codigo descripcion creditos').select('-createdAt -updatedAt -__v');
+
+    res.status(200).json({matriculas});
 };
 
 const actualizarMatricula = async (req, res) => {

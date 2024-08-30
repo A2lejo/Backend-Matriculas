@@ -1,4 +1,5 @@
 import { Schema, model} from "mongoose";
+import { Types } from "mongoose";
 
 const materiaSchema = new Schema({
     nombre: {

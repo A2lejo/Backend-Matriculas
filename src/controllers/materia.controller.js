@@ -12,6 +12,11 @@ const registrarMateria = async (req, res) => {
 		});
 };
 
+const ListarMaterias = async (_, res) => {
+    res.status(200).json(await MateriaSchema.find().select('-createdAt -updatedAt -__v'))
+};
+
+
 const detalleMateria = async (req, res) => {
 	const { codigo } = req.params;
 
@@ -22,7 +27,13 @@ const detalleMateria = async (req, res) => {
 			.status(404)
 			.json({ res: `No existe la meteria con el id ${id}` });
 
-	const estudiantes = await MatriculaSchema.find({ materias: materia._id }).select('estudiante').populate('estudiante', 'nombre').select('-_id -createdAt -updatedAt -__v');
+	const estudiantes = await MatriculaSchema.find({ materia: materia._id }).select('estudiante').populate('estudiante').select('-_id -createdAt -updatedAt -__v');
+
+	for (let i = 0; i < estudiantes.length; i++) {
+		estudiantes[i] = estudiantes[i].estudiante;
+	}
+
+	console.log(estudiantes)
 
 	res
 		.status(200)
@@ -41,7 +52,7 @@ const actualizarMateria = async (req, res) => {
 
 	const actualizarMateria = await MateriaSchema.findByIdAndUpdate(materia._id, req.body);
 
-	res.status(200).json({ res: `Materia ${codigo} actualizado` });
+	res.status(200).json({ res: `Materia ${actualizarMateria} actualizado` });
 };
 
 const eliminarMateria = async (req, res) => {
@@ -56,6 +67,7 @@ const eliminarMateria = async (req, res) => {
 
 export {
 	registrarMateria,
+	ListarMaterias,
 	detalleMateria,
 	actualizarMateria,
 	eliminarMateria,

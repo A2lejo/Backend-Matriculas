@@ -44,10 +44,7 @@ const estudianteSchema = new Schema({
         trim: true,
         unique: true,
     },
-    materias:[{
-        type: Types.ObjectId,
-        ref: "Materia",
-    }]
+
 },
 {
     timestamps: true,
